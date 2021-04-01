@@ -24,6 +24,9 @@
     <ClCompile Include="..\test\test_cdsar.c">
       <Filter>test</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\test_heap.c">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nc\cdsar.h">

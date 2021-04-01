@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h> //malloc
 #include <string.h>
+#include <assert.h>
 
 #include "clouds.h"
 
@@ -17,6 +18,8 @@ _plist cnode_childs(_pcnode _s)
 	_plist res = list_create(NULL);
 	_pqueue q = queue_create(NULL);
 	_pcnode n = NULL, tn = NULL;
+
+	_s->ajnds->reset(_s->ajnds);
 
 	for (; (n = _s->ajnds->next(_s->ajnds));) {
 		if (n->lev > _s->lev) {
@@ -45,6 +48,8 @@ _plist cnode_father(_pcnode _s)
 	_plist res = list_create(NULL);
 	_pcnode n = NULL;
 
+	_s->ajnds->reset(_s->ajnds);
+
 	for (; (n = _s->ajnds->next(_s->ajnds));) {
 		if (n->lev < _s->lev) { //父节点只存在于相邻节点中
 			res->add(res, n);
@@ -69,8 +74,8 @@ void cnode_free(_pcnode* _s)
 
 _pcnode cnode_create(int _id, int _lev, float _x, float _y)
 {
-	_pcnode n = NULL;
-	while (!(n = MALLOC(struct __nc_cnode, 1)));
+	_pcnode n = MALLOC(struct __nc_cnode, 1);
+	assert(n != NULL);
 
 	n->id = _id;
 	n->lev = _lev;

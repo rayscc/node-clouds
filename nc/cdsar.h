@@ -37,7 +37,7 @@
 #endif
 
 typedef struct __nc_snode {
-	void* data; struct __nc_snode* next;
+	void* e; struct __nc_snode* next;
 }*_psnode, * _pcache;
 
 #define HASHTAB_SIZE      (32)
@@ -63,8 +63,8 @@ typedef struct __nc_stack {
 
 	bool(*empty)(struct __nc_stack*);	/* 判断栈是否为空*/
 	uint32(*size)(struct __nc_stack*);	/* 获取栈的大小*/
-	void(*push)(struct __nc_stack*, void* _dt);/* 压入一个新元素到栈中*/
-	bool(*cmp)(void*, void*); /* 创建最小栈/最大栈 如果cmp返回值永远是true则为普通栈*/
+	void(*push)(struct __nc_stack*, void* _e);/* 压入一个新元素到栈中*/
+	bool(*_cmp)(void*, void*); /* 创建最小栈/最大栈 如果cmp返回值永远是true则为普通栈*/
 	void* (*top)(struct __nc_stack*);	/* 获取栈顶元素*/
 	void* (*pop)(struct __nc_stack*);	/* 弹出栈顶元素,并返回弹出元素*/
 	void(*clean)(struct __nc_stack*);	/* 清空栈中元素*/
@@ -82,8 +82,8 @@ typedef struct __nc_queue {
 
 	bool(*empty)(struct __nc_queue*);	/* 判断队列是否为空*/
 	uint32(*size)(struct __nc_queue*);	/* 获取队列的长度*/
-	void(*push)(struct __nc_queue*, void* _dt);/* 添加一个新元素到队列尾*/
-	bool(*cmp)(void*, void*); /* 创建优先队列 如果cmp返回值永远是false则为普通队列,永远为true则为普通栈*/
+	void(*push)(struct __nc_queue*, void* _e);/* 添加一个新元素到队列尾*/
+	bool(*_cmp)(void*, void*); /* 创建优先队列 如果cmp返回值永远是false则为普通队列,永远为true则为普通栈*/
 	void* (*pop)(struct __nc_queue*);	/* 弹出队列首元素,并返回弹出元素*/
 	void* (*front)(struct __nc_queue*);/* 获取队列首元素*/
 	void* (*back)(struct __nc_queue*);	/* 获取队列尾元素*/
@@ -105,11 +105,11 @@ typedef struct __nc_list {
 
 	uint32(*size)(struct __nc_list*);  /* 获取列表的长度*/
 	void* (*next)(struct __nc_list*); //获取下一个节点地址
-	void(*reset)(struct __nc_list*);  //初始化活动指针
-	void(*add)(struct __nc_list*, void*); //添加一个新元素到列表
-	bool(*cmp)(void*, void*);  //创建有序队列,
-	void* (*find)(struct __nc_list*, bool(*cond)(void*, void*), void*);
-	void(*remove)(struct __nc_list*, bool(*cond)(void*, void*), void*); //移除满足cond的一系列元素
+	void(*reset)(struct __nc_list*);  //初始化活动指针到队列首,调用next之前用
+	void(*add)(struct __nc_list*, void*); //添加一个新元素到列表(若没有比较函数,则默认插入队列首)
+	bool(*_cmp)(void*, void*);  //创建有序队列,
+	void* (*find)(struct __nc_list*, bool(*cond)(void*, void* _o), void* _o);
+	void(*remove)(struct __nc_list*, bool(*cond)(void*, void* _o), void* _o); //移除满足cond的一系列元素
 	//void(*join)(struct __nc_list* _ldst, struct __nc_list* _lsrc,)
 	void(*clean)(struct __nc_list*);  //清空队列中的所有元素
 	void(*free)(struct __nc_list**); //销毁_plist指向的堆空间,并将_plist置为NULL,释放内存
@@ -119,6 +119,27 @@ _EXTERN_ _plist list_create(bool(*cmp)(const void*, const void*));
 //bool cmp(const void* x, const void* y) { return (*(int*)x > * (int*)y); } 升序
 //bool cmp(const void* x, const void* y) { return (*(int*)x < * (int*)y); } 降序
 //bool cond(const void* x, const void* y) { return (*(node*)x).a == *(*int)y; }
+
+#define HEAP_INISIZE       (32)  //初始堆大小
+#define HEAP_ADDSIZE       (64)  //增加堆大小
+
+//HEAP
+typedef struct __nc_heap {
+	void** _dt;
+	uint32 _cap;
+	uint32 _sz;
+
+	bool(*empty)(struct __nc_heap*);
+	bool(*_cmp)(void*, void*);  //最大堆或最小堆. >:最大堆;<:最小堆
+	void(*insert)(struct __nc_heap*, void*); //插入一个元素
+	void* (*pop)(struct __nc_heap*); //弹出最大/最小值,并返回
+	void* (*top)(struct __nc_heap*); //获取最大/最小值
+	void(*clean)(struct __nc_heap*);
+	void(*free)(struct __nc_heap**);
+}*_pheap;
+_EXTERN_ _pheap heap_create(bool(*cmp)(const void*, const void*));
+//bool cmp_max(const void* x, const void* y) { return ((hnode*)x)->a > ((hnode*)y)->a; }  >:最大堆
+//bool cmp_min(const void* x, const void* y) { return ((hnode*)x)->a < ((hnode*)y)->a; }  <:最小堆
 
 //ALGORITHM
 _EXTERN_ void nc_qsort(void* pdt, int st, int ed, bool(*cmp)(void*, int, int), void(*agn)(void*, int, int));

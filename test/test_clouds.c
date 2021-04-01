@@ -66,7 +66,16 @@ int main()
 
 	_pcnode  re = cod->find(cod, test_cloud_cond, &xx);
 	if (re) {
-		printf("%d %d %f %f", re->id, re->lev, re->loc.x, re->loc.y);
+		printf("%d %d %f %f\n", re->id, re->lev, re->loc.x, re->loc.y);
+
+		_plist fa_list = re->father(re);
+		_pcnode x = NULL;
+		fa_list->reset(fa_list);
+
+		while ((x = fa_list->next(fa_list))) {
+			printf("%d %d %f %f\n", x->id, x->lev, x->loc.x, x->loc.y);
+		}
+		fa_list->free(&fa_list);
 	}
 
 	cod->free(&cod);

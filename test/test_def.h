@@ -5,6 +5,7 @@
 
 //#define TEST_PROJECT_CDSAR
 //#define TEST_PROJECT_CLOUDS
-#define TEST_PROJECT_SORT
+//#define TEST_PROJECT_SORT
+#define TEST_PROJECT_HEAP
 
 #endif

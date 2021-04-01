@@ -143,6 +143,7 @@
     <ClCompile Include="..\nc\clouds.c" />
     <ClCompile Include="..\test\test_clouds.c" />
     <ClCompile Include="..\test\test_cdsar.c" />
+    <ClCompile Include="..\test\test_heap.c" />
     <ClCompile Include="..\test\test_sort.c" />
   </ItemGroup>
   <ItemGroup>

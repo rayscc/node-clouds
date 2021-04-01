@@ -1,18 +1,21 @@
 ﻿#include <stdio.h>
 #include <stdlib.h> //malloc
 #include <string.h>
+#include <assert.h>
 
-#define MALLOC(_ty,_sz)         ((_ty*)malloc(sizeof(_ty)*(_sz)))
-#define MEMOFREE(_x,_v)         do {free(_x); (_x)=(_v);}while(0)
+#define MALLOC(_ty,_sz)           ((_ty*)malloc(sizeof(_ty)*(_sz)))
+#define REALLOC(_op,_ty,_nsz)     ((_ty*)realloc((_ty*)_op, sizeof(_ty)*(_nsz)))
+#define MEMOFREE(_x,_v)           do {free(_x); (_x)=(_v);}while(0)
 
 #include "cdsar.h"
 
 /* 创建单指针结点*/
-_psnode _sp_node(void* _dt, const _psnode _nt)
+_psnode _sp_node(void* _e, const _psnode _nt)
 {
-	_psnode n = NULL;
-	while (!(n = MALLOC(struct __nc_snode, 1)));
-	n->data = _dt, n->next = _nt;
+	_psnode n = MALLOC(struct __nc_snode, 1);
+	assert(n != NULL);
+
+	n->e = _e, n->next = _nt;
 	return n;
 }
 
@@ -42,7 +45,7 @@ bool table_contain(_ptable _s, void* _addr)
 
 	_pcache p = _s->_tab[hsi];
 	while (p != NULL) {
-		if (p->data == _addr) { return (bool)1; }
+		if (p->e == _addr) { return (bool)1; }
 		p = p->next;
 	}
 	return (bool)0;
@@ -55,7 +58,7 @@ bool table_join(_ptable _s, void* _addr)
 
 	_pcache p = _s->_tab[hsi];
 	for (; p;) {
-		if (p->data == _addr) { return (bool)0; }
+		if (p->e == _addr) { return (bool)0; }
 		p = p->next;
 	}
 	if (_s->_tab[hsi]) {
@@ -77,7 +80,7 @@ void table_remove(const _ptable _s, void* _addr)
 	_pcache lp = NULL, n;
 
 	for (; (*p); lp = (*p), (*p) = (*p)->next) {
-		if ((*p)->data == _addr) {
+		if ((*p)->e == _addr) {
 			n = (*p);
 			if (lp) { lp->next = (*p)->next; }
 			else { (*p) = (*p)->next; }
@@ -114,13 +117,13 @@ void table_free(_ptable* _s)
 
 _ptable table_create()
 {
-	_ptable t = NULL;
-	int i = 0;
-
-	while (!(t = MALLOC(struct __nc_table, 1)));
+	_ptable t = MALLOC(struct __nc_table, 1);
+	assert(t != NULL);
 
 	t->_tab = MALLOC(_pcache, HASHTAB_SIZE);
-	for (; i < HASHTAB_SIZE; ++i) { t->_tab[i] = NULL; }
+	assert(t->_tab != NULL);
+
+	memset(t->_tab, 0, sizeof(_pcache) * HASHTAB_SIZE);
 
 	t->size = 0;
 	t->contain = table_contain;
@@ -133,36 +136,36 @@ _ptable table_create()
 }
 
 /* 栈 */
-bool stack_empty(_pstack _s) {
+inline bool stack_empty(_pstack _s) {
 	return (_s->_ptop == NULL);
 }
 
-void stack_push(_pstack _s, void* _dt) {
-	_s->_ptop = _sp_node(_dt, _s->_ptop);
+inline void stack_push(_pstack _s, void* _e) {
+	_s->_ptop = _sp_node(_e, _s->_ptop);
 }
 
-void stack_push_cmp(_pstack _s, void* _dt)
+void stack_push_cmp(_pstack _s, void* _e)
 {
 	_psnode n = NULL;
-	if (_s->_ptop == NULL || _s->cmp(_dt, _s->_ptop->data)) {
-		_s->_ptop = _sp_node(_dt, _s->_ptop);
+	if (_s->_ptop == NULL || _s->_cmp(_e, _s->_ptop->e)) {
+		_s->_ptop = _sp_node(_e, _s->_ptop);
 	}
 	else {
 		_psnode p = _s->_ptop;
 		_psnode t = p->next;
 		while (t != NULL) {
-			if (_s->cmp(_dt, t->data)) break;
+			if (_s->_cmp(_e, t->e)) break;
 			p = t;
 			t = t->next;
 		}
-		n = _sp_node(_dt, t);
+		n = _sp_node(_e, t);
 		p->next = n;
 	}
 }
 
 //需要外加判断 返回是否为NULL
-void* stack_top(_pstack _s) {
-	return (_s->_ptop == NULL ? NULL : _s->_ptop->data);
+inline void* stack_top(_pstack _s) {
+	return (_s->_ptop == NULL ? NULL : _s->_ptop->e);
 }
 
 //需要外加判断 返回是否为NULL
@@ -172,7 +175,7 @@ void* stack_pop(_pstack _s)
 	_psnode t = NULL;
 
 	if (_s->_ptop != NULL) {
-		top = _s->_ptop->data;
+		top = _s->_ptop->e;
 		t = _s->_ptop->next;
 		MEMOFREE(_s->_ptop, t);
 	}
@@ -209,11 +212,13 @@ void stack_free(_pstack* _pstk)
 _pstack stack_create(bool(*cmp)(void*, void*))
 {
 	_pstack _s = MALLOC(struct __nc_stack, 1);
+	assert(_s != NULL);
+
 	_s->_ptop = NULL;
 	_s->empty = stack_empty;
 	_s->pop = stack_pop;
 	_s->push = (cmp == NULL) ? stack_push : stack_push_cmp;
-	_s->cmp = cmp;
+	_s->_cmp = cmp;
 	_s->size = stack_size;
 	_s->top = stack_top;
 	_s->clean = stack_clean;
@@ -222,25 +227,25 @@ _pstack stack_create(bool(*cmp)(void*, void*))
 }
 
 /* 队列 */
-bool queue_empty(_pqueue _s) {
+inline bool queue_empty(_pqueue _s) {
 	return (_s->_phead->next == NULL);
 }
 
-uint32 queue_size(_pqueue _s) {
-	return (*(uint32*)_s->_phead->data);
+inline uint32 queue_size(_pqueue _s) {
+	return (*(uint32*)_s->_phead->e);
 }
 
-void queue_push(_pqueue _s, void* _dt)
+void queue_push(_pqueue _s, void* _e)
 {
-	_psnode n = _sp_node(_dt, NULL);
+	_psnode n = _sp_node(_e, NULL);
 	_s->_prear->next = n;
 	_s->_prear = n;
-	++(*(uint32*)(_s->_phead->data));
+	++(*(uint32*)(_s->_phead->e));
 }
 
-void queue_push_cmp(_pqueue _s, void* _dt)
+void queue_push_cmp(_pqueue _s, void* _e)
 {
-	_psnode n = _sp_node(_dt, NULL);
+	_psnode n = _sp_node(_e, NULL);
 	if (_s->_phead->next == NULL) {
 		_s->_prear->next = n;
 		_s->_prear = n;
@@ -249,7 +254,7 @@ void queue_push_cmp(_pqueue _s, void* _dt)
 		_psnode p = _s->_phead;
 		_psnode t = p->next;
 		while (t != NULL) {
-			if (_s->cmp(_dt, t->data))
+			if (_s->_cmp(_e, t->e))
 				break;
 			p = t;
 			t = t->next;
@@ -260,7 +265,7 @@ void queue_push_cmp(_pqueue _s, void* _dt)
 			_s->_prear = n;
 		}
 	}
-	++(*(uint32*)(_s->_phead->data));
+	++(*(uint32*)(_s->_phead->e));
 }
 
 //需要外加判断 返回是否为NULL
@@ -270,23 +275,23 @@ void* queue_pop(_pqueue _s)
 	_psnode t = _s->_phead->next;
 	if (t != NULL) {
 		_s->_phead->next = t->next;
-		pop = t->data;
+		pop = t->e;
 		if (t->next == NULL)
 			_s->_prear = _s->_phead;
 		MEMOFREE(t, NULL);
-		--(*(uint32*)(_s->_phead->data));
+		--(*(uint32*)(_s->_phead->e));
 	}
 	return pop;
 }
 
 //需要外加判断 返回是否为NULL
 void* queue_front(_pqueue _s) {
-	return (_s->_phead->next == NULL ? NULL : _s->_phead->next->data);
+	return (_s->_phead->next == NULL ? NULL : _s->_phead->next->e);
 }
 
 //需要外加判断 返回是否为NULL
 void* queue_back(_pqueue _s) {
-	return (_s->_prear == _s->_phead ? NULL : _s->_prear->data);
+	return (_s->_prear == _s->_phead ? NULL : _s->_prear->e);
 }
 
 void queue_clean(_pqueue _s)
@@ -298,7 +303,7 @@ void queue_clean(_pqueue _s)
 		MEMOFREE(t, n);
 	}
 	_s->_phead->next = t;
-	*(uint32*)(_s->_phead->data) = 0;
+	*(uint32*)(_s->_phead->e) = 0;
 	_s->_prear = _s->_phead;
 }
 
@@ -312,9 +317,11 @@ void queue_free(_pqueue* _pque)
 _pqueue queue_create(bool(*cmp)(void*, void*))
 {
 	_pqueue _que = MALLOC(struct __nc_queue, 1);
+	assert(_que != NULL);
 
 	_que->_phead = _sp_node(MALLOC(uint32, 1), NULL);
-	*((uint32*)_que->_phead->data) = 0;
+
+	*((uint32*)_que->_phead->e) = 0;
 
 	_que->_prear = _que->_phead;
 	_que->back = queue_back;
@@ -323,34 +330,34 @@ _pqueue queue_create(bool(*cmp)(void*, void*))
 	_que->front = queue_front;
 	_que->pop = queue_pop;
 	_que->push = (cmp == NULL) ? queue_push : queue_push_cmp;
-	_que->cmp = cmp;
+	_que->_cmp = cmp;
 	_que->size = queue_size;
 	_que->free = queue_free;
 	return _que;
 }
 
 /* 列表 */
-inline bool list_contain(_plist _s, void* _dt) {
-	return (_s->_tab->contain(_s->_tab, _dt));
+inline bool list_contain(_plist _s, void* _e) {
+	return (_s->_tab->contain(_s->_tab, _e));
 }
 
-void list_add(_plist _s, void* _dt)
+void list_add(_plist _s, void* _e)
 {
-	if (_s->_tab->join(_s->_tab, _dt)) {
-		_s->_phead->next = _sp_node(_dt, _s->_phead->next);
+	if (_s->_tab->join(_s->_tab, _e)) {
+		_s->_phead->next = _sp_node(_e, _s->_phead->next);
 	}
 }
 
-void list_add_cmp(_plist _s, void* _dt)
+void list_add_cmp(_plist _s, void* _e)
 {
 	_psnode n, p, t;
-	if (_s->_tab->join(_s->_tab, _dt))
+	if (_s->_tab->join(_s->_tab, _e))
 	{
-		n = _sp_node(_dt, NULL);
+		n = _sp_node(_e, NULL);
 		p = _s->_phead;
 		t = p->next;
 		while (t != NULL) {
-			if (_s->cmp(_dt, t->data)) { break; }
+			if (_s->_cmp(_e, t->e)) { break; }
 			p = t;
 			t = t->next;
 		}
@@ -364,35 +371,35 @@ void* list_next(_plist _s)
 	if (_s->_pcur != NULL) {
 		_s->_pcur = _s->_pcur->next;
 		if (_s->_pcur != NULL) {
-			return _s->_pcur->data;
+			return _s->_pcur->e;
 		}
 	}
 	return NULL;
 }
 
-void* list_find(_plist _s, bool(*cond)(void*, void*), void* _o)
+void* list_find(_plist _s, bool(*cond)(void*, void* _o), void* _o)
 {
 	_psnode t = _s->_phead->next;
 	_psnode n = NULL;
 
 	while (t != NULL) {
 		n = t->next;
-		if (cond(t->data, _o)) { return t->data; }
+		if (cond(t->e, _o)) { return t->e; }
 		t = n;
 	}
 	return NULL;
 }
 
-void list_remove(_plist _s, bool(*cond)(void*, void*), void* _o)
+void list_remove(_plist _s, bool(*cond)(void*, void* _o), void* _o)
 {
 	_psnode t = _s->_phead->next, n;
 	_psnode x = _s->_phead;
 
 	while (t != NULL) {
 		n = t->next;
-		if (cond(t->data, _o)) {
+		if (cond(t->e, _o)) {
 			if (_s->_pcur == t) { list_next(_s); }
-			_s->_tab->remove(_s->_tab, t->data);
+			_s->_tab->remove(_s->_tab, t->e);
 			MEMOFREE(t, NULL);
 			x->next = n;
 		}
@@ -430,6 +437,7 @@ inline uint32 list_size(_plist _s) { return _s->_tab->size; }
 _plist list_create(bool(*cmp)(const void*, const void*))
 {
 	_plist _lst = MALLOC(struct __nc_list, 1);
+	assert(_lst != NULL);
 
 	_lst->_phead = _sp_node(NULL, NULL);
 	_lst->_pcur = _lst->_phead;
@@ -438,7 +446,7 @@ _plist list_create(bool(*cmp)(const void*, const void*))
 	_lst->contain = list_contain;
 
 	_lst->add = (cmp == NULL) ? list_add : list_add_cmp;
-	_lst->cmp = cmp;
+	_lst->_cmp = cmp;
 	_lst->next = list_next;
 	_lst->find = list_find;
 	_lst->remove = list_remove;
@@ -450,8 +458,94 @@ _plist list_create(bool(*cmp)(const void*, const void*))
 	return _lst;
 }
 
+/* 堆*/
+inline bool heap_empty(_pheap _h) { return _h->_sz == 0; }
+
+void heap_insert(_pheap _h, void* _e)
+{
+	if (_h->_sz >= _h->_cap)
+	{
+		_h->_dt = REALLOC(_h->_dt, void*, _h->_cap + HEAP_ADDSIZE);
+		assert(_h->_dt != NULL);
+		_h->_cap += HEAP_ADDSIZE;
+	}
+
+	uint32 i = _h->_sz;
+	uint32 pa = i >> 1;
+
+	for (; i > 0 && _h->_cmp(_e, _h->_dt[pa]);)
+	{
+		_h->_dt[i] = _h->_dt[pa];
+		i = pa, pa >>= 1;
+	}
+	_h->_dt[i] = _e;
+	++_h->_sz;
+}
+
+void* heap_top(_pheap _h)
+{
+	if (_h->_sz == 0) { return NULL; }
+	else { return _h->_dt[0]; }
+}
+
+void* heap_pop(_pheap _h)
+{
+	if (_h->_sz == 0) { return NULL; }
+
+	void* ret = _h->_dt[0];
+	void* la = _h->_dt[--_h->_sz];
+
+	uint32 pa = 0;
+	uint32 ch = (pa << 1) + 1;
+
+	for (; ch < _h->_sz;)
+	{
+		if (ch < _h->_sz - 1 && _h->_cmp(_h->_dt[ch + 1], _h->_dt[ch])) { ++ch; }
+		if (_h->_cmp(_h->_dt[ch], la))
+		{
+			_h->_dt[pa] = _h->_dt[ch];
+			pa = ch;
+			ch <<= 1;
+		}
+		else { break; }
+	}
+	_h->_dt[pa] = la;
+	return ret;
+}
+
+inline void heap_clean(_pheap _h) { _h->_sz = 0; }
+
+void heap_free(_pheap* _h)
+{
+	heap_clean(*_h);
+	MEMOFREE((*_h)->_dt, NULL);
+	MEMOFREE(*_h, NULL);
+}
+
+_pheap heap_create(bool(*cmp)(const void*, const void*))
+{
+	assert(cmp != NULL);
+
+	_pheap _hp = MALLOC(struct __nc_heap, 1);
+	assert(_hp != NULL);
+
+	_hp->_dt = MALLOC(void*, HEAP_INISIZE);
+	assert(_hp->_dt);
+
+	_hp->_sz = 0;
+	_hp->_cap = HEAP_INISIZE;
+	_hp->empty = heap_empty;
+	_hp->_cmp = cmp;
+	_hp->insert = heap_insert;
+	_hp->pop = heap_pop;
+	_hp->top = heap_top;
+	_hp->clean = heap_clean;
+	_hp->free = heap_free;
+
+	return _hp;
+}
+
 #define SORT_CUTOFF  (50)
-#include <assert.h>
 
 /*
  * @ 快速排序+插入排序
@@ -464,9 +558,7 @@ void nc_qsort(void* pdt, int st, int ed, bool(*cmp)(void*, int, int), void(*agn)
 	int i, j;
 	int n = ed - st + 1;
 
-#ifdef _DEBUG
-	assert(st >= 1);
-#endif
+	assert(pdt && st >= 1);
 
 	if (SORT_CUTOFF <= n) {
 		if (cmp(pdt, ed, st)) {
