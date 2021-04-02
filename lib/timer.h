@@ -1,5 +1,5 @@
-#ifndef _NCLOUD_TIMER_H_
-#define _NCLOUD_TIMER_H_
+#ifndef _U_TIMER_H_
+#define _U_TIMER_H_
 
 #ifdef __linux__
 #include <sys/time.h>

@@ -47,10 +47,10 @@ typedef struct __nc_table {
 	_pcache* _tab;
 
 	uint32 size;
-	bool(*contain)(struct __nc_table*, void*);
-	//void* (*find)(struct __nc_table*, bool(*cond)(void*, void*), void*);
+	bool(*contain)(struct __nc_table*, const void*);
+	//void* (*find)(struct __nc_table*, bool(*cond)(const void*,const void*),const void*);
 	bool(*join)(struct __nc_table*, void*);
-	void(*remove)(struct __nc_table*, void*);
+	void(*remove)(struct __nc_table*, const  void*);
 	void(*clean)(struct __nc_table**);
 	void(*free)(struct __nc_table**);
 }*_ptable;
@@ -64,7 +64,7 @@ typedef struct __nc_stack {
 	bool(*empty)(struct __nc_stack*);	/* 判断栈是否为空*/
 	uint32(*size)(struct __nc_stack*);	/* 获取栈的大小*/
 	void(*push)(struct __nc_stack*, void* _e);/* 压入一个新元素到栈中*/
-	bool(*_cmp)(void*, void*); /* 创建最小栈/最大栈 如果cmp返回值永远是true则为普通栈*/
+	bool(*_cmp)(const void*, const void*); /* 创建最小栈/最大栈 如果cmp返回值永远是true则为普通栈*/
 	void* (*top)(struct __nc_stack*);	/* 获取栈顶元素*/
 	void* (*pop)(struct __nc_stack*);	/* 弹出栈顶元素,并返回弹出元素*/
 	void(*clean)(struct __nc_stack*);	/* 清空栈中元素*/
@@ -83,7 +83,7 @@ typedef struct __nc_queue {
 	bool(*empty)(struct __nc_queue*);	/* 判断队列是否为空*/
 	uint32(*size)(struct __nc_queue*);	/* 获取队列的长度*/
 	void(*push)(struct __nc_queue*, void* _e);/* 添加一个新元素到队列尾*/
-	bool(*_cmp)(void*, void*); /* 创建优先队列 如果cmp返回值永远是false则为普通队列,永远为true则为普通栈*/
+	bool(*_cmp)(const void*, const void*); /* 创建优先队列 如果cmp返回值永远是false则为普通队列,永远为true则为普通栈*/
 	void* (*pop)(struct __nc_queue*);	/* 弹出队列首元素,并返回弹出元素*/
 	void* (*front)(struct __nc_queue*);/* 获取队列首元素*/
 	void* (*back)(struct __nc_queue*);	/* 获取队列尾元素*/
@@ -101,15 +101,15 @@ typedef struct __nc_list {
 	struct __nc_snode* _pcur;  //当前活动指针
 
 	struct __nc_table* _tab;  //加速查找冗余
-	bool(*contain)(struct __nc_list*, void*); //判断当前列表是否包含元素
+	bool(*contain)(struct __nc_list*, const void*); //判断当前列表是否包含元素
 
 	uint32(*size)(struct __nc_list*);  /* 获取列表的长度*/
 	void* (*next)(struct __nc_list*); //获取下一个节点地址
 	void(*reset)(struct __nc_list*);  //初始化活动指针到队列首,调用next之前用
 	void(*add)(struct __nc_list*, void*); //添加一个新元素到列表(若没有比较函数,则默认插入队列首)
-	bool(*_cmp)(void*, void*);  //创建有序队列,
-	void* (*find)(struct __nc_list*, bool(*cond)(void*, void* _o), void* _o);
-	void(*remove)(struct __nc_list*, bool(*cond)(void*, void* _o), void* _o); //移除满足cond的一系列元素
+	bool(*_cmp)(const void*, const void*);  //创建有序队列,
+	void* (*find)(struct __nc_list*, bool(*cond)(const void*, const void* _o), const void* _o);
+	void(*remove)(struct __nc_list*, bool(*cond)(const void*, const void* _o), const void* _o); //移除满足cond的一系列元素
 	//void(*join)(struct __nc_list* _ldst, struct __nc_list* _lsrc,)
 	void(*clean)(struct __nc_list*);  //清空队列中的所有元素
 	void(*free)(struct __nc_list**); //销毁_plist指向的堆空间,并将_plist置为NULL,释放内存
@@ -130,7 +130,7 @@ typedef struct __nc_heap {
 	uint32 _sz;
 
 	bool(*empty)(struct __nc_heap*);
-	bool(*_cmp)(void*, void*);  //最大堆或最小堆. >:最大堆;<:最小堆
+	bool(*_cmp)(const void*, const void*);  //最大堆或最小堆. >:最大堆;<:最小堆
 	void(*insert)(struct __nc_heap*, void*); //插入一个元素
 	void* (*pop)(struct __nc_heap*); //弹出最大/最小值,并返回
 	void* (*top)(struct __nc_heap*); //获取最大/最小值
@@ -142,11 +142,11 @@ _EXTERN_ _pheap heap_create(bool(*cmp)(const void*, const void*));
 //bool cmp_min(const void* x, const void* y) { return ((hnode*)x)->a < ((hnode*)y)->a; }  <:最小堆
 
 //ALGORITHM
-_EXTERN_ void nc_qsort(void* pdt, int st, int ed, bool(*cmp)(void*, int, int), void(*agn)(void*, int, int));
+_EXTERN_ void nc_qsort(void* pdt, uint32 st, uint32 ed, bool(*cmp)(void*, uint32, uint32), void(*agn)(void*, uint32, uint32));
 //!pdt[0]将作为buff被使用,待排数据至少从索引1开始,即st>=1;待排数据索引范围 st~ed(包括两个端点)
-//bool cmp(void* dt, int xi, int yi) { return ((snode*)dt + xi)->b <= ((snode*)dt + yi)->b; } 小->大
-//bool cmp(void* dt, int xi, int yi) { return ((snode*)dt + xi)->b >= ((snode*)dt + yi)->b; } 大->小
-//void agn(void* dt, int xi, int yi) { ((int*)dt + xi)->b = ((int*)dt + yi)->b; }  assign function
+//bool cmp(void* dt, uint32 xi, uint32 yi) { return ((snode*)dt + xi)->b <= ((snode*)dt + yi)->b; } 小->大
+//bool cmp(void* dt, uint32 xi, uint32 yi) { return ((snode*)dt + xi)->b >= ((snode*)dt + yi)->b; } 大->小
+//void agn(void* dt, uint32 xi, uint32 yi) { ((int*)dt + xi)->b = ((int*)dt + yi)->b; }  assign function
 
 //NOTE:__nc_list也能使用nc_qsort,但实测效率低,就删了:(
 

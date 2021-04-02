@@ -4,7 +4,7 @@
 #include <time.h>
 
 #include "test_def.h"
-#include "../nc/clouds.h"
+#include "../lib/clouds.h"
 
 #define N    11
 

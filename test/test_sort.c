@@ -5,8 +5,8 @@
 #include <time.h>
 
 #include "test_def.h"
-#include "../nc/cdsar.h"
-#include "../nc/timer.h"
+#include "../lib/cdsar.h"
+#include "../lib/timer.h"
 
 typedef struct _snode
 {
@@ -16,8 +16,8 @@ typedef struct _snode
 
 void local_qsort(snode* pdt, int st, int ed);
 
-bool cmp(void* dt, int xi, int yi) { return ((snode*)dt + xi)->b <= ((snode*)dt + yi)->b; }
-void agn(void* dt, int xi, int yi) {
+bool cmp(void* dt, uint32 xi, uint32 yi) { return ((snode*)dt + xi)->b <= ((snode*)dt + yi)->b; }
+void agn(void* dt, uint32 xi, uint32 yi) {
 	((snode*)dt + xi)->b = ((snode*)dt + yi)->b;
 	//((snode*)dt + xi)->a = ((snode*)dt + yi)->a;
 	//...
@@ -25,7 +25,7 @@ void agn(void* dt, int xi, int yi) {
 
 void test_ns_qsort(int len)
 {
-	double st, ed;
+	double st, ed, dura;
 	snode* dt1 = (snode*)malloc(sizeof(snode) * (len + 1));
 	snode* dt2 = (snode*)malloc(sizeof(snode) * (len + 1));
 
@@ -45,18 +45,24 @@ void test_ns_qsort(int len)
 	}
 
 	GET_TIME(st);
+	GET_TIME(ed);
+	dura = ed - st;
+	GET_TIME(st);
 	//
 	nc_qsort(dt1, 1, len, cmp, agn); //第二个参数必须>=1, 待排数据索引范围 1~len(包括两个端点)
 	//
 	GET_TIME(ed);
-	printf("nc_qsort elapsed = %lf\n", ed - st);
+	printf("nc_qsort elapsed = %lf\n", ed - st - dura);
 
+	GET_TIME(st);
+	GET_TIME(ed);
+	dura = ed - st;
 	GET_TIME(st);
 	//
 	local_qsort(dt2, 1, len);
 	//
 	GET_TIME(ed);
-	printf("lc_qsort elapsed = %lf\n", ed - st);
+	printf("lc_qsort elapsed = %lf\n", ed - st - dura);
 
 	//for (i = 1; i <= len; i++)
 	//{
@@ -70,7 +76,7 @@ void test_ns_qsort(int len)
 #ifdef TEST_PROJECT_SORT
 int main()
 {
-	test_ns_qsort(100000);
+	test_ns_qsort(1000000);
 
 	return 0;
 }

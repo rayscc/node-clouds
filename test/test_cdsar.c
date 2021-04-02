@@ -4,7 +4,7 @@
 #include <time.h>
 
 #include "test_def.h"
-#include "../nc/cdsar.h"
+#include "../lib/cdsar.h"
 
 #define N 10
 

@@ -38,7 +38,7 @@ _psnode _sp_node(void* _e, const _psnode _nt)
     x = x & (HASHTAB_SIZE - 1);                 \
 }while(0)
 
-bool table_contain(_ptable _s, void* _addr)
+bool table_contain(_ptable _s, const void* _addr)
 {
 	uint64 hsi = (uint64)_addr;
 	NC_HASH_FUNC(hsi);
@@ -71,7 +71,7 @@ bool table_join(_ptable _s, void* _addr)
 	return (bool)1;
 }
 
-void table_remove(const _ptable _s, void* _addr)
+void table_remove(const _ptable _s, const void* _addr)
 {
 	uint64 hsi = (uint64)_addr;
 	NC_HASH_FUNC(hsi);
@@ -136,11 +136,11 @@ _ptable table_create()
 }
 
 /* 栈 */
-inline bool stack_empty(_pstack _s) {
+bool stack_empty(_pstack _s) {
 	return (_s->_ptop == NULL);
 }
 
-inline void stack_push(_pstack _s, void* _e) {
+void stack_push(_pstack _s, void* _e) {
 	_s->_ptop = _sp_node(_e, _s->_ptop);
 }
 
@@ -164,7 +164,7 @@ void stack_push_cmp(_pstack _s, void* _e)
 }
 
 //需要外加判断 返回是否为NULL
-inline void* stack_top(_pstack _s) {
+void* stack_top(_pstack _s) {
 	return (_s->_ptop == NULL ? NULL : _s->_ptop->e);
 }
 
@@ -209,7 +209,7 @@ void stack_free(_pstack* _pstk)
 	MEMOFREE(*_pstk, NULL);
 }
 
-_pstack stack_create(bool(*cmp)(void*, void*))
+_pstack stack_create(bool(*cmp)(const void*, const void*))
 {
 	_pstack _s = MALLOC(struct __nc_stack, 1);
 	assert(_s != NULL);
@@ -227,11 +227,11 @@ _pstack stack_create(bool(*cmp)(void*, void*))
 }
 
 /* 队列 */
-inline bool queue_empty(_pqueue _s) {
+bool queue_empty(_pqueue _s) {
 	return (_s->_phead->next == NULL);
 }
 
-inline uint32 queue_size(_pqueue _s) {
+uint32 queue_size(_pqueue _s) {
 	return (*(uint32*)_s->_phead->e);
 }
 
@@ -314,7 +314,7 @@ void queue_free(_pqueue* _pque)
 	MEMOFREE(*_pque, NULL);
 }
 
-_pqueue queue_create(bool(*cmp)(void*, void*))
+_pqueue queue_create(bool(*cmp)(const void*, const void*))
 {
 	_pqueue _que = MALLOC(struct __nc_queue, 1);
 	assert(_que != NULL);
@@ -337,7 +337,7 @@ _pqueue queue_create(bool(*cmp)(void*, void*))
 }
 
 /* 列表 */
-inline bool list_contain(_plist _s, void* _e) {
+bool list_contain(_plist _s, const void* _e) {
 	return (_s->_tab->contain(_s->_tab, _e));
 }
 
@@ -377,7 +377,7 @@ void* list_next(_plist _s)
 	return NULL;
 }
 
-void* list_find(_plist _s, bool(*cond)(void*, void* _o), void* _o)
+void* list_find(_plist _s, bool(*cond)(const void*, const void* _o), const void* _o)
 {
 	_psnode t = _s->_phead->next;
 	_psnode n = NULL;
@@ -390,7 +390,7 @@ void* list_find(_plist _s, bool(*cond)(void*, void* _o), void* _o)
 	return NULL;
 }
 
-void list_remove(_plist _s, bool(*cond)(void*, void* _o), void* _o)
+void list_remove(_plist _s, bool(*cond)(const void*, const void* _o), const void* _o)
 {
 	_psnode t = _s->_phead->next, n;
 	_psnode x = _s->_phead;
@@ -432,7 +432,7 @@ void list_reset(_plist _s) {
 	_s->_pcur = _s->_phead;
 }
 
-inline uint32 list_size(_plist _s) { return _s->_tab->size; }
+uint32 list_size(_plist _s) { return _s->_tab->size; }
 
 _plist list_create(bool(*cmp)(const void*, const void*))
 {
@@ -459,14 +459,15 @@ _plist list_create(bool(*cmp)(const void*, const void*))
 }
 
 /* 堆*/
-inline bool heap_empty(_pheap _h) { return _h->_sz == 0; }
+bool heap_empty(_pheap _h) { return _h->_sz == 0; }
 
 void heap_insert(_pheap _h, void* _e)
 {
 	if (_h->_sz >= _h->_cap - 1)
 	{
-		_h->_dt = REALLOC(_h->_dt, void*, _h->_cap + HEAP_ADDSIZE);
-		assert(_h->_dt != NULL);
+		void** _tmp = REALLOC(_h->_dt, void*, _h->_cap + HEAP_ADDSIZE);
+		assert(_tmp != NULL);
+		_h->_dt = _tmp;
 		_h->_cap += HEAP_ADDSIZE;
 	}
 
@@ -512,7 +513,7 @@ void* heap_pop(_pheap _h)
 	return ret;
 }
 
-inline void heap_clean(_pheap _h) { _h->_sz = 0; }
+void heap_clean(_pheap _h) { _h->_sz = 0; }
 
 void heap_free(_pheap* _h)
 {
@@ -523,7 +524,7 @@ void heap_free(_pheap* _h)
 
 _pheap heap_create(bool(*cmp)(const void*, const void*))
 {
-	assert(cmp != NULL);
+	if (cmp == NULL) { return NULL; }
 
 	_pheap _hp = MALLOC(struct __nc_heap, 1);
 	assert(_hp != NULL);
@@ -552,10 +553,10 @@ _pheap heap_create(bool(*cmp)(const void*, const void*))
  * @ 插入排序:O(N^2)
  * !!pdt[0]默认作为buff使用,即要求 st>=1
  */
-void nc_qsort(void* pdt, int st, int ed, bool(*cmp)(void*, int, int), void(*agn)(void*, int, int))
+void nc_qsort(void* pdt, uint32 st, uint32 ed, bool(*cmp)(void*, uint32, uint32), void(*agn)(void*, uint32, uint32))
 {
-	int i, j;
-	int n = ed - st + 1;
+	uint32 i, j;
+	uint32 n = ed - st + 1;
 
 	assert(pdt && st >= 1);
 

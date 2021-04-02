@@ -1,6 +1,6 @@
 /*<!-- author:urays email:urays@foxmail.com date: 2020.10.28 -->*/
-#ifndef _NCLOUD_NODE_CLOUDS_H
-#define _NCLOUD_NODE_CLOUDS_H
+#ifndef _U_NODE_CLOUDS_H
+#define _U_NODE_CLOUDS_H
 
 #include "cdsar.h"
 
@@ -26,7 +26,7 @@ typedef struct __nc_cloud {
 	_plist _reg;
 
 	void(*join)(struct __nc_cloud*, void*);  //在点云中添加一个新节点
-	_pcnode(*find)(struct __nc_cloud*, bool(*cond)(void*, void*), void*);
+	_pcnode(*find)(struct __nc_cloud*, bool(*cond)(const void*, const void*), const void*);
 	uint32(*size)(struct __nc_cloud*);
 	void(*free)(struct __nc_cloud**);
 }*_pcloud;

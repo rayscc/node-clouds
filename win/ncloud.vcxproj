@@ -139,17 +139,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\nc\cdsar.c" />
-    <ClCompile Include="..\nc\clouds.c" />
+    <ClCompile Include="..\lib\cdsar.c" />
+    <ClCompile Include="..\lib\clouds.c" />
     <ClCompile Include="..\test\test_clouds.c" />
     <ClCompile Include="..\test\test_cdsar.c" />
     <ClCompile Include="..\test\test_heap.c" />
     <ClCompile Include="..\test\test_sort.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\nc\cdsar.h" />
-    <ClInclude Include="..\nc\clouds.h" />
-    <ClInclude Include="..\nc\timer.h" />
+    <ClInclude Include="..\lib\cdsar.h" />
+    <ClInclude Include="..\lib\clouds.h" />
+    <ClInclude Include="..\lib\timer.h" />
     <ClInclude Include="..\test\test_def.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

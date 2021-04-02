@@ -4,19 +4,13 @@
     <Filter Include="test">
       <UniqueIdentifier>{b6e988e2-73f4-4b28-baaf-6f072c5ead20}</UniqueIdentifier>
     </Filter>
-    <Filter Include="nc">
+    <Filter Include="lib">
       <UniqueIdentifier>{7222b799-0d32-45fd-9b6f-b94f02d01b58}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\test\test_sort.c">
       <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nc\cdsar.c">
-      <Filter>nc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nc\clouds.c">
-      <Filter>nc</Filter>
     </ClCompile>
     <ClCompile Include="..\test\test_clouds.c">
       <Filter>test</Filter>
@@ -27,19 +21,25 @@
     <ClCompile Include="..\test\test_heap.c">
       <Filter>test</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\cdsar.c">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\clouds.c">
+      <Filter>lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\nc\cdsar.h">
-      <Filter>nc</Filter>
+    <ClInclude Include="..\lib\cdsar.h">
+      <Filter>lib</Filter>
     </ClInclude>
-    <ClInclude Include="..\nc\clouds.h">
-      <Filter>nc</Filter>
+    <ClInclude Include="..\lib\clouds.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\timer.h">
+      <Filter>lib</Filter>
     </ClInclude>
     <ClInclude Include="..\test\test_def.h">
       <Filter>test</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nc\timer.h">
-      <Filter>nc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

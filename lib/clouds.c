@@ -91,10 +91,10 @@ _pcnode cnode_create(int _id, int _lev, float _x, float _y)
 }
 
 /* node cloud */
-inline void cloud_join(_pcloud _s, _pcnode _n) { _s->_reg->add(_s->_reg, _n); }
+inline void cloud_join(_pcloud _s, void* _n) { _s->_reg->add(_s->_reg, _n); }
 inline uint32 cloud_size(_pcloud _s) { return _s->_reg->size(_s->_reg); }
 
-_pcnode cloud_find(struct __nc_cloud* _s, bool(*cond)(void*, void*), void* _o)
+_pcnode cloud_find(struct __nc_cloud* _s, bool(*cond)(const void*, const void*), const void* _o)
 {
 	return (_s->_reg->find(_s->_reg, cond, _o));
 }
