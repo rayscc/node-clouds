@@ -1,3 +1,6 @@
+#include "test_def.h"
+#if defined __VSCODE__ || defined TEST_PROJECT_CDSAR
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -159,9 +162,10 @@ void test_cdsar()
 	free(pdata);
 }
 
-#ifdef TEST_PROJECT_CDSAR
 int main(int argv, char** args)
 {
 	test_cdsar();
+
+	__PRAGMA_END__
 }
 #endif

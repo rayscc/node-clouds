@@ -1,3 +1,6 @@
+#include "test_def.h"
+#if defined __VSCODE__ || defined TEST_PROJECT_CLOUDS
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -14,7 +17,6 @@ bool test_cloud_cond(const void* a, const void* b)
 		((_pcnode)a)->loc.y == (*(_clocal*)b).y);
 }
 
-#ifdef TEST_PROJECT_CLOUDS
 int main()
 {
 	int i = 0;
@@ -72,7 +74,7 @@ int main()
 		_pcnode x = NULL;
 		fa_list->reset(fa_list);
 
-		while ((x = fa_list->next(fa_list))) {
+		while ((x = (_pcnode)fa_list->next(fa_list))) {
 			printf("%d %d %f %f\n", x->id, x->lev, x->loc.x, x->loc.y);
 		}
 		fa_list->free(&fa_list);
@@ -81,6 +83,7 @@ int main()
 	cod->free(&cod);
 	for (i = 0; i < N; ++i) { pdata[i]->free(&pdata[i]); }
 	free(pdata);
-	return 0;
+
+	__PRAGMA_END__
 }
 #endif

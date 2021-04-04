@@ -19,12 +19,14 @@ _psnode _sp_node(void* _e, const _psnode _nt)
 	return n;
 }
 
-//#define NC_HASH_FUNC(faddr)  do{                                \
-//    register unsigned int hash = 0;                             \
-//    const char* p = faddr;                                      \
-//    while (*p) { hash += (hash << 5) + *p++; }                  \
-//    hsi = hash & (CACHE_SIZE - 1);                              \
-//}while(0)
+/*
+#define NC_HASH_FUNC(faddr)  do{                                \
+   register unsigned int hash = 0;                             \
+   const char* p = faddr;                                      \
+   while (*p) { hash += (hash << 5) + *p++; }                  \
+   hsi = hash & (CACHE_SIZE - 1);                              \
+}while(0)
+*/
 
 /* table*/
 #define NC_HASH_FUNC(x)   do{                   \

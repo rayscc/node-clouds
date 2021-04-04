@@ -21,7 +21,7 @@ _plist cnode_childs(_pcnode _s)
 
 	_s->ajnds->reset(_s->ajnds);
 
-	for (; (n = _s->ajnds->next(_s->ajnds));) {
+	for (; (n = (_pcnode)_s->ajnds->next(_s->ajnds));) {
 		if (n->lev > _s->lev) {
 			q->push(q, n);
 		}
@@ -34,7 +34,7 @@ _plist cnode_childs(_pcnode _s)
 		if (tn->lev > _s->lev) {
 			res->add(res, tn);
 		}
-		for (; (n = tn->ajnds->next(tn->ajnds));) {
+		for (; (n = (_pcnode)tn->ajnds->next(tn->ajnds));) {
 			q->push(q, n);
 		}
 		tn->ajnds->reset(tn->ajnds);
@@ -50,7 +50,7 @@ _plist cnode_father(_pcnode _s)
 
 	_s->ajnds->reset(_s->ajnds);
 
-	for (; (n = _s->ajnds->next(_s->ajnds));) {
+	for (; (n = (_pcnode)_s->ajnds->next(_s->ajnds));) {
 		if (n->lev < _s->lev) { //父节点只存在于相邻节点中
 			res->add(res, n);
 		}
@@ -96,7 +96,7 @@ inline uint32 cloud_size(_pcloud _s) { return _s->_reg->size(_s->_reg); }
 
 _pcnode cloud_find(struct __nc_cloud* _s, bool(*cond)(const void*, const void*), const void* _o)
 {
-	return (_s->_reg->find(_s->_reg, cond, _o));
+	return (_pcnode)(_s->_reg->find(_s->_reg, cond, _o));
 }
 
 void cloud_free(_pcloud* _s)

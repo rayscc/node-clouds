@@ -1,3 +1,6 @@
+#include "test_def.h"
+#if defined __VSCODE__ || defined TEST_PROJECT_HEAP
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +45,7 @@ void test_heap()
 	printf("[size]: %d\n", maxheap->_sz);
 
 	hnode* tmp = NULL;
-	while ((tmp = maxheap->pop(maxheap)) != NULL)
+	while ((tmp = (hnode*)maxheap->pop(maxheap)) != NULL)
 	{
 		printf("%d %d\n", tmp->a, tmp->b);
 	}
@@ -61,7 +64,7 @@ void test_heap()
 
 	while (!minheap->empty(minheap))
 	{
-		tmp = minheap->pop(minheap);
+		tmp = (hnode*)minheap->pop(minheap);
 		printf("%d %d\n", tmp->a, tmp->b);
 	}
 	printf("[size]: %d\n", minheap->_sz);
@@ -72,9 +75,10 @@ void test_heap()
 	free(pdata);
 }
 
-#ifdef TEST_PROJECT_HEAP
 int main(int argv, char** args)
 {
 	test_heap();
+
+	__PRAGMA_END__
 }
 #endif

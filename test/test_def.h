@@ -1,5 +1,11 @@
-#ifndef _NCLOUD_TEST_DEF_H
-#define _NCLOUD_TEST_DEF_H
+#ifndef _TEST_DEF_H
+#define _TEST_DEF_H
+
+#define __PRAGMA_END__   \
+    {                    \
+        system("pause"); \
+        return 0;        \
+    }
 
 //<!-- SELECT PROJECT TO BE TESTED! -->
 

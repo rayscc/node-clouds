@@ -1,0 +1,40 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceRoot}",
+                "C:/PKGs/mingw64/include",
+                "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++",
+                "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32",
+                "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward",
+                "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include",
+                "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed",
+                "C:/PKGs/mingw64/x86_64-w64-mingw32/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "__GNUC__=6",
+                "__cdecl=__attribute__((__cdecl__))",
+                "__VSCODE__"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "",
+                "path": [
+                    "${workspaceRoot}",
+                    "C:/PKGs/mingw64/include",
+                    "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++",
+                    "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32",
+                    "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward",
+                    "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include",
+                    "C:/PKGs/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed",
+                    "C:/PKGs/mingw64/x86_64-w64-mingw32/include"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}

@@ -1,10 +1,12 @@
+#include "test_def.h"
+#if defined __VSCODE__ || defined TEST_PROJECT_SORT
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
 
-#include "test_def.h"
 #include "../lib/cdsar.h"
 #include "../lib/timer.h"
 
@@ -14,14 +16,54 @@ typedef struct _snode
 	int b;
 }snode;
 
-void local_qsort(snode* pdt, int st, int ed);
-
 bool cmp(void* dt, uint32 xi, uint32 yi) { return ((snode*)dt + xi)->b <= ((snode*)dt + yi)->b; }
 void agn(void* dt, uint32 xi, uint32 yi) {
 	((snode*)dt + xi)->b = ((snode*)dt + yi)->b;
 	//((snode*)dt + xi)->a = ((snode*)dt + yi)->a;
 	//...
 }
+
+//--------------------------------------------------------------------
+void local_qsort(snode* pdt, int st, int ed)
+{
+	int i, j;
+	int n = ed - st + 1;
+
+	if (50 <= n) {
+		if (pdt[ed].b <= pdt[st].b) {
+			pdt[0].b = pdt[st].b;; pdt[st].b = pdt[ed].b;; pdt[ed].b = pdt[0].b;
+		}
+		if (n == 2) { return; }
+
+		pdt[0].b = pdt[st + (n >> 1)].b;
+		pdt[st + (n >> 1)].b = pdt[st + 1].b;
+		pdt[st + 1].b = pdt[0].b;
+		if (pdt[st + 1].b <= pdt[st].b) { pdt[0].b = pdt[st].b; pdt[st].b = pdt[st + 1].b; }
+		else if (pdt[ed].b <= pdt[st + 1].b) { pdt[0].b = pdt[ed].b; pdt[ed].b = pdt[st + 1].b; }
+		if (n == 3) { pdt[st + 1].b = pdt[0].b; return; }
+
+		i = st + 1, j = ed - 1;
+		while (i < j) {
+			while (i < j && pdt[0].b <= pdt[j].b) --j;
+			pdt[i].b = pdt[j].b;
+			while (i < j && pdt[i].b <= pdt[0].b) ++i;
+			pdt[j].b = pdt[i].b;
+		}
+		agn(pdt, i, 0);
+		if (i - st > 1) { nc_qsort(pdt, st, i - 1, cmp, agn); }
+		if (ed - i > 1) { nc_qsort(pdt, i + 1, ed, cmp, agn); }
+	}
+	else {
+		for (i = st + 1; i <= ed; i++) {
+			pdt[0].b = pdt[i].b;
+			for (j = i; j > st && pdt[0].b <= pdt[j - 1].b; --j) {
+				pdt[j].b = pdt[j - 1].b;
+			}
+			pdt[j].b = pdt[0].b;
+		}
+	}
+}
+//--------------------------------------------------------------------
 
 void test_ns_qsort(int len)
 {
@@ -73,52 +115,10 @@ void test_ns_qsort(int len)
 	free(dt2); dt2 = NULL;
 }
 
-#ifdef TEST_PROJECT_SORT
 int main()
 {
 	test_ns_qsort(1000000);
 
-	return 0;
+	__PRAGMA_END__
 }
 #endif
-
-//------------------------------------------------------------------
-void local_qsort(snode* pdt, int st, int ed)
-{
-	int i, j;
-	int n = ed - st + 1;
-
-	if (50 <= n) {
-		if (pdt[ed].b <= pdt[st].b) {
-			pdt[0].b = pdt[st].b;; pdt[st].b = pdt[ed].b;; pdt[ed].b = pdt[0].b;
-		}
-		if (n == 2) { return; }
-
-		pdt[0].b = pdt[st + (n >> 1)].b;
-		pdt[st + (n >> 1)].b = pdt[st + 1].b;
-		pdt[st + 1].b = pdt[0].b;
-		if (pdt[st + 1].b <= pdt[st].b) { pdt[0].b = pdt[st].b; pdt[st].b = pdt[st + 1].b; }
-		else if (pdt[ed].b <= pdt[st + 1].b) { pdt[0].b = pdt[ed].b; pdt[ed].b = pdt[st + 1].b; }
-		if (n == 3) { pdt[st + 1].b = pdt[0].b; return; }
-
-		i = st + 1, j = ed - 1;
-		while (i < j) {
-			while (i < j && pdt[0].b <= pdt[j].b) --j;
-			pdt[i].b = pdt[j].b;
-			while (i < j && pdt[i].b <= pdt[0].b) ++i;
-			pdt[j].b = pdt[i].b;
-		}
-		agn(pdt, i, 0);
-		if (i - st > 1) { nc_qsort(pdt, st, i - 1, cmp, agn); }
-		if (ed - i > 1) { nc_qsort(pdt, i + 1, ed, cmp, agn); }
-	}
-	else {
-		for (i = st + 1; i <= ed; i++) {
-			pdt[0].b = pdt[i].b;
-			for (j = i; j > st && pdt[0].b <= pdt[j - 1].b; --j) {
-				pdt[j].b = pdt[j - 1].b;
-			}
-			pdt[j].b = pdt[0].b;
-		}
-	}
-}
